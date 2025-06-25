@@ -1,203 +1,276 @@
-ETI Marketing
-=============
+django-marketing-toolkit
+========================
 
-This is Django app that provides miscellaneous marketing functionality for ETI
-apps.
+A comprehensive Django package that provides essential marketing functionality including analytics tracking, landing pages, signup forms, and Active Campaign integration.
 
-Installation
-------------
+## Features
 
-* Make sure you have `virtualenv` activated
+- 🔍 **Analytics Tracking**: Google Analytics, Google Tag Manager, Twitter Pixel, and Active Campaign event tracking
+- 🎯 **Landing Pages**: Targeted landing pages with admin interface
+- 📝 **Signup Forms**: Active Campaign integrated signup forms
+- 🖼️ **Preview Slideshows**: Drag-and-drop sortable preview galleries
+- ⚡ **Event Tracking**: Comprehensive event tracking with Active Campaign
+- 🎨 **Template Tags**: Easy-to-use template tags for all tracking scripts
+
+## Installation
+
+### Using pip
 
 ```bash
-  pip install git+https://github.com/cehdeti/marketing.git
+pip install git+https://github.com/zephy0808/django-marketing-toolkit.git
 ```
-Don't forget to add this to `requirements.txt` if you are _not_ using `pipenv` or run `pip freeze > requirements.txt`:
+
+Add to your `requirements.txt`:
 
 ```bash
-  -e git+https://github.com/cehdeti/marketing.git#egg=eti_marketing
+-e git+https://github.com/zephy0808/django-marketing-toolkit.git#egg=django_marketing_toolkit
 ```
 
-If using `pipenv`
+### Using pipenv
 
+```bash
+pipenv install git+https://github.com/zephy0808/django-marketing-toolkit.git#egg=django_marketing_toolkit
 ```
-  pipenv install git+https://github.com/cehdeti/marketing.git#egg=eti_marketing
-```
 
-Setting up the Package
-----------------------
+## Quick Start
 
-The package is split up into different apps, depending on which functionality
-you'd like to include. At minimum, you must include the following in your
-Django settings:
+Add the base package to your Django settings:
 
 ```python
-  INSTALLED_APPS = [
-    ...
+INSTALLED_APPS = [
+    # ... your other apps
     'eti_marketing',
-  ]
+]
 ```
 
-Read on for instructions on setting up each of apps.
+## Configuration
 
-### Google Analytics/GTM/Active Campaign/Twitter Trackers
+### Analytics & Tracking
 
-This package contains template tags you can use to output GA, GTM, and AC
-tracking, Twitter Pixel scripts. First, configure the following settings in your `settings.py` (you don't need all
-of them if they don't apply):
+Configure tracking services by adding these settings to your `settings.py`:
 
-* `GOOGLE_ANALYTICS_ID`: The ID of your Google Analytics account (G-xxxxxxxxxx).
-* `GOOGLE_TAGMANAGER_ID`: The ID of your GTM account (GTM-xxxxxx).
-* `ACTIVE_CAMPAIGN_EVENT_ACTID`: The ID for your AC events (numeric)
-* `TWITTER_PIXEL_ID`: The Twitter Pixel ID
+```python
+# Google Analytics
+GOOGLE_ANALYTICS_ID = 'G-XXXXXXXXXX'
 
-Then in your template, do this:
+# Google Tag Manager
+GOOGLE_TAGMANAGER_ID = 'GTM-XXXXXX'
 
+# Active Campaign Event Tracking
+ACTIVE_CAMPAIGN_EVENT_ACTID = 'your_numeric_id'
+
+# Twitter Pixel
+TWITTER_PIXEL_ID = 'your_twitter_pixel_id'
 ```
+
+Add tracking scripts to your templates:
+
+```html
 {% load marketing %}
 
 <html>
 <head>
-  ...
+  <!-- Analytics tracking scripts -->
   {% google_analytics %}
   {% google_tagmanager %}
   {% active_campaign_event_tracker %}
   {% twitter_pixel_tracker %}
-  ...
 </head>
 <body>
+  <!-- GTM noscript fallback -->
   {% google_tagmanager_noscript %}
+  
+  <!-- Your content -->
 </body>
 </html>
 ```
 
-No conditional logic should be necessary to include the tags; if the settings above are not
-configured, the template tags will simply not print the scripts.
-
 ### Landing Pages
 
-The `landing_page` app provides targeted Landing Pages that can be tailored to
-specific audiences.
+Create targeted landing pages with rich content editing:
 
-1. Add app to `INSTALLED_APPS`:
+1. **Add to INSTALLED_APPS:**
 
 ```python
-  INSTALLED_APPS = [
-    ...
+INSTALLED_APPS = [
+    # ... your other apps
     'eti_marketing',
     'eti_marketing.landing_page',
     'ckeditor',
-  ]
+]
 ```
 
-2. Include the URLs in your main URL conf. Usually, we like to put these URLs
-   into some kind of namespace.
+2. **Include URLs:**
 
 ```python
-  path('p/', include('eti_marketing.landing_page.urls')),
+# urls.py
+urlpatterns = [
+    path('pages/', include('eti_marketing.landing_page.urls')),
+]
 ```
 
-3. Run `python manage.py migrate` to run the database migrations.
+3. **Run migrations:**
 
-4. Once you have the django admin going, go to **Sites** and add the site's domain in place of **example.com** so that the **View on Site** buttons in the admin will work correctly.
+```bash
+python manage.py migrate
+```
 
-### Preview
+4. **Configure site domain** in Django admin under **Sites** for proper "View on Site" functionality.
 
-The `preview` app provides a simple slideshow for users to preview the app. It also contains a nice drag and drop UI to sort the slides using [`django-admin-sortable2`](http://django-admin-sortable2.readthedocs.io/en/latest/installation.html)
+### Preview Slideshows
 
-1. Add app to `INSTALLED_APPS`:
+Add interactive, sortable preview galleries:
+
+1. **Add to INSTALLED_APPS:**
 
 ```python
-  INSTALLED_APPS = [
-    ...
+INSTALLED_APPS = [
+    # ... your other apps
     'eti_marketing',
     'eti_marketing.preview',
     'ckeditor',
     'adminsortable2',
-  ]
-```
-
-2. Tie the view to a specific URL:
-
-```python
-  path('preview/', include('eti_marketing.preview.urls')),
-```
-
-3. Run `python manage.py migrate` to run the database migrations.
-
-4. Once you have the django admin going, go to **Sites** and add the site's domain in place of **example.com** so that the **View on Site** buttons in the admin will work correctly.
-
-### Signup Form
-
-A signup form that talks with Active Campaign is included. To use it, set the
-following config in your Django settings at a minimum:
-
-* `ACTIVE_CAMPAIGN_API_URL`: The URL your AC instance resides at.
-* `ACTIVE_CAMPAIGN_API_KEY`: API key
-
-Then, add a URL conf for the `eti_marketing.views.SignupView` view:
-
-```python
-# urls.py
-
-from django.urls import path
-from eti_marketing.views import SignupView
-
-urlpatterns = [
-  path('signup/', SignupView.as_view(), name='signup'),
 ]
 ```
 
-You may also optionally specify a `ACTIVE_CAMPAIGN_LIST_SUBSCRIPTIONS` setting, which should be a `list` of mailing list IDs that you'd like all new contacts to be subscribed to.
+2. **Include URLs:**
 
-Feel free to subclass the `SignupForm` class if you need to provide additional
-fields or change the mapping of form fields to Active Campaign fields. If you
-end up subclassing the form but do not wish to also subclass the `SignupView`,
-you can set the `ETI_MARKETING_SIGNUP_FORM_CLASS` Django setting to the
-fully-qualified class name of your form and it will be used instead.
+```python
+urlpatterns = [
+    path('preview/', include('eti_marketing.preview.urls')),
+]
+```
 
-### Active Campaign Event Tracking
+3. **Run migrations:**
 
-Additionally, you may also track events with Active Campaign using the
-`eti_marketing.active_campaign.track_event` function. To use it, first
-configure the following options in your Django settings:
+```bash
+python manage.py migrate
+```
 
-* `ACTIVE_CAMPAIGN_EVENT_ACTID`: ActID for the events API
-* `ACTIVE_CAMPAIGN_EVENT_KEY`: Key for the events API
+### Active Campaign Integration
 
-Then call it like so:
+#### Signup Forms
+
+Configure Active Campaign API settings:
+
+```python
+# Active Campaign API Configuration
+ACTIVE_CAMPAIGN_API_URL = 'https://your-account.api-us1.com'
+ACTIVE_CAMPAIGN_API_KEY = 'your_api_key'
+
+# Optional: Auto-subscribe to lists
+ACTIVE_CAMPAIGN_LIST_SUBSCRIPTIONS = [1, 2, 3]  # List IDs
+
+# Optional: Track signup events
+ACTIVE_CAMPAIGN_SIGNUP_EVENT = 'user_signup'
+```
+
+Add signup view to your URLs:
+
+```python
+# urls.py
+from eti_marketing.views import SignupView
+
+urlpatterns = [
+    path('signup/', SignupView.as_view(), name='signup'),
+]
+```
+
+#### Event Tracking
+
+Configure event tracking settings:
+
+```python
+ACTIVE_CAMPAIGN_EVENT_ACTID = 'your_act_id'
+ACTIVE_CAMPAIGN_EVENT_KEY = 'your_event_key'
+```
+
+Track events in your code:
 
 ```python
 from eti_marketing.active_campaign import track_event
 
-track_event('test@example.com', 'my_event_name', ...an optional dict of event
-data...)
+# Track a simple event
+track_event('user@example.com', 'page_view')
+
+# Track an event with additional data
+track_event('user@example.com', 'purchase', {
+    'product': 'Premium Plan',
+    'amount': 99.99
+})
 ```
 
-### Signup Form + Event Tracking
+## Customization
 
-You can use the signup form _and_ the event tracking together by first setting
-up both components as detailed above, then setting the `ACTIVE_CAMPAIGN_SIGNUP_EVENT` option in your Django settings to the name of the event that should be tracked whenever the contact form is filled out.
+### Custom Templates
 
-Templates
----------
-
-You may configure the base template that the templates in this package extend
-from by changing the `ETI_MARKETING_BASE_TEMPLATE` setting:
+Override the base template used by all marketing templates:
 
 ```python
-ETI_MARKETING_BASE_TEMPLATE = 'my_base_template.html'
+ETI_MARKETING_BASE_TEMPLATE = 'your_custom_base.html'
 ```
 
-It defaults to `base.html`, so if that exists in your project you should be
-fine.
+### Custom Signup Forms
 
-Development
------------
+Extend the signup form for additional fields:
 
-* `make init`: Installs dependencies and gets you ready to roll.
-* `make migrations`: Generates new migrations (for when you change the models)
-* `make test`: Runs the test suite
-* `make lint`: Runs `flake8`
+```python
+# forms.py
+from eti_marketing.forms import SignupForm
 
-Check out the `Makefile` for more functionality.
+class CustomSignupForm(SignupForm):
+    company = forms.CharField(max_length=100)
+    
+    def save(self):
+        # Custom save logic
+        super().save()
+```
+
+Configure your custom form:
+
+```python
+ETI_MARKETING_SIGNUP_FORM_CLASS = 'myapp.forms.CustomSignupForm'
+```
+
+## Development
+
+### Setup Development Environment
+
+```bash
+make init
+```
+
+### Available Commands
+
+```bash
+make migrations    # Generate new migrations
+make test         # Run test suite
+make lint         # Run code linting
+make coverage     # Run tests with coverage report
+```
+
+## Requirements
+
+- Django >= 3.2
+- Python >= 3.8
+
+### Optional Dependencies
+
+- `django-ckeditor` - For rich text editing in landing pages
+- `django-admin-sortable2` - For drag-and-drop sorting in preview app
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Support
+
+For support and questions, please open an issue on GitHub or contact the development team.
